@@ -1,0 +1,62 @@
+name: Generate & Deploy images
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'hars/**'
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  generate-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fetch gh-pages
+        run: git fetch origin gh-pages --depth=1
+
+      - name: Extract info.json
+        run: git checkout origin/gh-pages -- info.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '25'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create build directory
+        run: mkdir build
+
+      - name: Generate images
+        env:
+          INFO_JSON: info.json
+          IMPORT_DIR: ./hars
+          EXPORT_DIR: build
+          RELATIVE_URL: '/e-reader-assets.github.io'
+        run: node ./scripts/processHars.js
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
+          keep_files: 'true'
+
+      - name: Clear hars folder after generation & deployment
+        run: |
+          rm -rf ./hars/*.har
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ./hars
+          git commit -m "Clear har files after deployment" || echo "Nothing to commit"
+          git push origin main
