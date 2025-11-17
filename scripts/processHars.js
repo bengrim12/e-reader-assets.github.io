@@ -182,14 +182,22 @@ async function walk(current, dirPath, files) {
 
 // readharfilessync -----------------------------------
 export function readHarFilesSync(importDir) {
-    return fs.readdirSync(importDir)
-        .filter(file => file.endsWith(".har"))
-        .map((file) => {
-                console.log("read har file", file);
-                const buffer = fs.readFileSync(`${importDir}/${file}`);
-                return JSON.parse(buffer.toString());
-            }
-        );
+    console.log(`readHarFilesSync from ${importDir}`);
+    const harFiles = fs.readdirSync(importDir)
+        .filter(file => file.endsWith(".har"));
+
+    const result = [];
+
+    console.log(`loop over ${harFiles}`)
+    for (let i = 0; i < harFiles.length; i++) {
+        const file = harFiles[i];
+        console.log('processing har file: ', file, importDir);
+        const buffer = fs.readFileSync(`${importDir}/${file}`);
+        const parsedHar = JSON.parse(buffer.toString());
+        result.push(parsedHar);
+    }
+
+    return result;
 }
 
 // splitting --------------------------------------------
