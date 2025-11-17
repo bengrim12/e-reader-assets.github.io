@@ -144,7 +144,7 @@ export async function generateInfoJson(dirPath) {
 
     const outPath = path.join(root, INFO_JSON);
     const infoJson = JSON.stringify(files, null, 4);
-    console.log(`save info json: ${infoJson}`);
+    console.log(`save info json: ${infoJson.length}`);
     await fs.writeFile(outPath, infoJson, 'utf8', console.error);
     return outPath;
 }
@@ -183,25 +183,15 @@ async function walk(current, dirPath, files) {
     }
 }
 
-
-// readharfilessync -----------------------------------
+// readHarFilesSync -----------------------------------
 export function readHarFilesSync(importDir) {
-    console.log(`readHarFilesSync from ${importDir}`);
-    const harFiles = fs.readdirSync(importDir)
-        .filter(file => file.endsWith(".har"));
-
-    const result = [];
-
-    console.log(`loop over ${harFiles}`)
-    for (let i = 0; i < harFiles.length; i++) {
-        const file = harFiles[i];
-        console.log('processing har file: ', file, importDir);
-        const buffer = fs.readFileSync(`${importDir}/${file}`);
-        const parsedHar = JSON.parse(buffer.toString());
-        result.push(parsedHar);
-    }
-
-    return result;
+    return fs.readdirSync(importDir)
+        .filter(file => file.endsWith(".har"))
+        .map((file) => {
+                const buffer = fs.readFileSync(`${importDir}/${file}`);
+                return JSON.parse(buffer.toString());
+            }
+        );
 }
 
 // splitting --------------------------------------------
@@ -216,7 +206,7 @@ export async function cutAndExport(base64Images, outDir, opts) {
         layers.push(layer);
 
         const meta = await sharp(buffer).metadata();
-        compositeWidth = meta.width; // only needed once, but whatever
+        compositeWidth = Math.max(compositeWidth, meta.width); // only needed once, but whatever
         compositeHeight += meta.height;
     }
 
