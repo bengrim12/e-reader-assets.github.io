@@ -75,9 +75,8 @@ jobs:
       - name: Clear hars folder after generation & deployment
         run: |
           rm -rf ./hars/*.har
-          rm -rf ./info.json
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add ./hars
+          git add ./hars/*.har
           git commit -m "Clear har files after deployment" || echo "Nothing to commit"
           git push origin main

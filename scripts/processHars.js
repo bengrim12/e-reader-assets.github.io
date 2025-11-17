@@ -83,8 +83,10 @@ async function main() {
         return;
     }
 
+    const imagesByChaptersOfHar = [];
+
     for (const har of harFiles) {
-        console.log(`processing ${har.log.pages[0].title}`);
+        console.log(`sorting entries for story ${har.log.pages[0].title}`);
         const mapper = MapperFactoryImpl.get(har);
 
         const pageMap = har.log.pages.reduce((obj, page) => Object.assign(obj, {[page.id]: page}), {});
@@ -106,6 +108,11 @@ async function main() {
             throw new Error(`No images extracted for har ${har.log.pages[0].title}`);
         }
 
+        imagesByChaptersOfHar.push(imagesByChapters);
+    }
+
+    for (const imagesByChapters of imagesByChaptersOfHar) {
+        console.log(`start converting images to ${Object.keys(imagesByChapters)[0]}`);
         for (const [outDir, images] of Object.entries(imagesByChapters)) {
             console.log(`export images to ${outDir}`); // out/567649/15- / out/orv/15/
             const imgs = await cutAndExport(images, outDir, {
