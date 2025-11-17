@@ -22,6 +22,9 @@ jobs:
         with:
           lfs: true
 
+      - name: Pull LFS objects
+        run: git lfs pull
+
       - name: Pull LFS files
         run: git lfs pull
 
