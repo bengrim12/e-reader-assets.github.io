@@ -23,7 +23,6 @@ export const MapperFactoryImpl = {
 const WebtoonXYZMapper = {
     filter(e) {
         return (
-            e.response.content.mimeType === 'image/jpeg' &&
             !!e.request.url.match("webtoon.xyz/manga_.*/((\\d+)\\.jpg)$")
         );
     },
@@ -50,8 +49,6 @@ const NHENTAI_URL_PATTERN = "nhentai.net/galleries/(\\d+)/(\\d+)";
 const NHentaiMapper = {
     filter(e) {
         return (
-            (e.response.content.mimeType === 'image/webp' ||
-                e.response.content.mimeType === 'image/jpeg') &&
             !!e.request.url.match(NHENTAI_URL_PATTERN)
         )
     },
