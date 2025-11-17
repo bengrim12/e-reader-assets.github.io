@@ -37,6 +37,20 @@ jobs:
       - name: Create build directory
         run: mkdir build
 
+      - name: Debug files in hars
+        run: |
+          echo "Files in ./hars:"
+          ls -al ./hars
+          echo "Files in repo root:"
+          ls -al
+
+      - name: Debug JSON files
+        run: |
+          for f in ./hars/*; do
+            echo "--- $f ---"
+            head -n 20 "$f"
+          done
+
       - name: Generate images
         env:
           INFO_JSON: info.json
