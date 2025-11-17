@@ -185,6 +185,7 @@ export function readHarFilesSync(importDir) {
     return fs.readdirSync(importDir)
         .filter(file => file.endsWith(".har"))
         .map((file) => {
+                console.log("read har file", file);
                 const buffer = fs.readFileSync(`${importDir}/${file}`);
                 return JSON.parse(buffer.toString());
             }
