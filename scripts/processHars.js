@@ -3,7 +3,7 @@ import path from "path";
 import sharp from "sharp";
 
 const INFO_JSON = process.env.INFO_JSON || 'info.json';
-const IMPORT_DIR = process.env.IMPORT_DIR || '.';
+const IMPORT_DIR = process.env.IMPORT_DIR || 'hars';
 const EXPORT_DIR = process.env.EXPORT_DIR || 'build';
 const RELATIVE_URL = process.env.RELATIVE_URL || '/e-reader-assets.github.io';
 
@@ -46,24 +46,25 @@ const WebtoonXYZMapper = {
     }
 };
 
+const NHENTAI_URL_PATTERN = "nhentai.net/galleries/(\\d+)/(\\d+)";
 const NHentaiMapper = {
     filter(e) {
         return (
             (e.response.content.mimeType === 'image/webp' ||
                 e.response.content.mimeType === 'image/jpeg') &&
-            !!e.request.url.match("nhentai.net/galleries/(\\d+)/((\\d+)\\..*)$")
+            !!e.request.url.match(NHENTAI_URL_PATTERN)
         )
-        // return !!e.request.url.match("webtoon.xyz/manga_.*/((\\d+)\\.jpg)$");
     },
     sort(e1, e2) {
+        // nhentai.net/galleries/3502515/12t.webp.webp <- dafuq?
         return (
-            Number(e1.request.url.match("nhentai.net/galleries/(\\d+)/((\\d+)\\..*)$")[2]) -
-            Number(e2.request.url.match("nhentai.net/galleries/(\\d+)/((\\d+)\\..*)$")[2])
+            Number(e1.request.url.match(NHENTAI_URL_PATTERN)[2]) -
+            Number(e2.request.url.match(NHENTAI_URL_PATTERN)[2])
         );
     },
     resolveChapter(EXPORT_DIR, page, e) {
         const title = page.title.match("nhentai.net/g/(\\d+)/")[1];
-        const storyPage = e.request.url.match("nhentai.net/galleries/(\\d+)/((\\d+)\\..*)$")[3];
+        const storyPage = e.request.url.match(NHENTAI_URL_PATTERN)[2];
 
         const outDir = `${EXPORT_DIR}/${title}/000`; // out/567649/000
         if (!fs.existsSync(outDir)) {
@@ -103,6 +104,10 @@ async function main() {
             }
             return obj;
         }, {});
+
+        if (Object.entries(imagesByChapters).length === 0) {
+            throw new Error(`No images extracted for har ${har.log.pages[0].title}`);
+        }
 
         for (const [outDir, images] of Object.entries(imagesByChapters)) {
             console.log(`export images to ${outDir}`); // out/567649/15- / out/orv/15/
